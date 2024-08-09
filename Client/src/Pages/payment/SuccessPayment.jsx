@@ -16,15 +16,12 @@ const SuccessPayment = () => {
   };
 
   useEffect(() => {
-    if (
-      !location.state &&
-      (!location.state.orderInfo || !location.state.wholesaler)
-    ) {
+    if (!location.state) {
       navigate("/", { replace: true });
       return;
     } else if (location.state.wholesaler) {
       setIsWholesaler(true);
-    } else {
+    } else if (location.state.orderInfo) {
       setOrderInfo(location.state.orderInfo);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
