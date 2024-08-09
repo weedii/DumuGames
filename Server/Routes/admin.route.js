@@ -2,7 +2,9 @@ import express from "express";
 import { verifyAdmin } from "../Utils/verifyUser.js";
 import {
   addCards,
+  deleteAdmin,
   deleteCard,
+  deleteUserByAdmin,
   getAdmins,
   getAllCards,
   getOrders,
@@ -10,6 +12,7 @@ import {
   getUserInfoByID,
   getUsers,
   updateAdmin,
+  updateCardPrice,
   updateUserStatus,
 } from "../Controllers/admin.controller.js";
 import { SignInAdmin, SignUpAdmin } from "../Controllers/auth.controller.js";
@@ -26,7 +29,10 @@ router.post("/get-user-info-by-id", verifyAdmin, getUserInfoByID);
 router.post("/add-cards", verifyAdmin, addCards);
 router.get("/get-all-cards", getAllCards);
 router.post("/delete-card", verifyAdmin, deleteCard);
+router.post("/update-card-price", verifyAdmin, updateCardPrice);
 router.get("/get-orders", verifyAdmin, getOrders);
 router.get("/get-orders-individuals", getOrdersIndividuals);
+router.post("/delete-user/:id", verifyAdmin, deleteUserByAdmin);
+router.post("/delete-admin", verifyAdmin, deleteAdmin);
 
 export default router;

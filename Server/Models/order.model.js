@@ -36,12 +36,8 @@ const cardSchema = new mongoose.Schema(
 
 const orderSchema = new mongoose.Schema(
   {
-    userID: {
-      type: String,
-      required: true,
-    },
-    userEmail: {
-      type: String,
+    userInfo: {
+      type: {},
       required: true,
     },
     cards: {

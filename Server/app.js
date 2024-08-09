@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import authRouter from "./Routes/auth.route.js";
 import userRouter from "./Routes/user.route.js";
 import adminRouter from "./Routes/admin.route.js";
+import checkoutRouter from "./Routes/checkout.route.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 dotenv.config();
@@ -11,7 +12,7 @@ dotenv.config();
 const app = express();
 app.use(
   cors({
-    origin: "*",
+    origin: ["http://localhost:3000"],
     credentials: true,
   })
 );
@@ -22,6 +23,7 @@ app.get("/", (req, res) => res.send("<h1>Hello Server!</h1>"));
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
 app.use("/api/admin", adminRouter);
+app.use("/api/checkout", checkoutRouter);
 
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;

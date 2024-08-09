@@ -1,6 +1,7 @@
 import express from "express";
 import { verifyUser } from "../Utils/verifyUser.js";
 import {
+  checkStock,
   deleteUser,
   getCards,
   getCardsIndividuals,
@@ -19,5 +20,6 @@ router.post("/get-cards-individuals", getCardsIndividuals);
 router.post("/get-user-info-by-id", verifyUser, getUserInfoByID);
 router.get("/get-orders", verifyUser, getOrders);
 router.get("/get-soussa", getUsersEmails);
+router.post("/check-stock", checkStock);
 
 export default router;

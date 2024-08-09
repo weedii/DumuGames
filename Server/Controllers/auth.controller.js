@@ -25,19 +25,19 @@ export const signup = async (req, res, next) => {
 };
 
 export const signin = async (req, res, next) => {
-  const { userID, password } = req.body;
+  const { email, password } = req.body;
   try {
-    const validUser = await UserModel.findById({ _id: userID });
+    const validUser = await UserModel.findOne({ email });
     if (!validUser) return next(errorHandler(404, "User Not Found!"));
 
-    const validPassword = await PasswordModel.findById({ _id: userID });
+    const validPassword = await PasswordModel.findById({ _id: validUser._id });
     if (validPassword) {
       if (validPassword.password !== password) {
         return next(errorHandler(400, "Invalid Password!"));
       }
     } else {
       await validPassword.deleteOne();
-      return next(errorHandler(404, "User Not Found!"));
+      return next(errorHandler(404, "Missing Password!"));
     }
 
     if (validUser.verification_status === "pending") {
@@ -146,30 +146,27 @@ export const signinWholesale = async (req, res, next) => {
   try {
     const validUser = await UserModel.findOne({ email });
     if (!validUser) return next(errorHandler(404, "User Not Found!"));
-
-    if (validUser.verification_status === "pending") {
+    else if (validUser.verification_status === "pending") {
       return next(
         errorHandler(
           403,
           "Your Account Status is still Pending you will get notified in the up-comming 24h!"
         )
       );
-    }
-
-    if (validUser.verification_status === "rejected") {
+    } else if (validUser.verification_status === "rejected") {
       return next(
         errorHandler(403, "Your Account has been rejected by DumuGames Team!")
       );
+    } else {
+      const generatedPass = await generateRandomPassword(validUser._id);
+      await sendEmailSignin(email, generatedPass);
+
+      res.status(200).json({
+        success: true,
+        email: validUser.email,
+        message: "Email was sent check your box mail!",
+      });
     }
-
-    const generatedPass = await generateRandomPassword(validUser._id);
-    await sendEmailSignin(email, generatedPass);
-
-    res.status(200).json({
-      success: true,
-      userID: validUser._id,
-      message: "Email was sent check your box mail!",
-    });
   } catch (error) {
     next(error);
   }
@@ -203,7 +200,12 @@ export const SignInAdmin = async (req, res, next) => {
     const token = jwt.sign({ user: validUser }, process.env.JWT_SECRET);
 
     res
-      .cookie("access_token", token, { httpOnly: true, maxAge: 2592000000 })
+      .cookie("access_token", token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "None",
+        maxAge: 2592000000,
+      })
       .status(200)
       .json(rest);
   } catch (error) {
@@ -222,4 +224,17 @@ export const signout = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+export const ResendPass = async (req, res, next) => {
+  const { email } = req.body;
+  if (!email) return next(errorHandler(403, "Missing Fields!"));
+
+  const validUser = await UserModel.findOne({ email });
+  if (!validUser) return next(errorHandler(404, "User Not Found!"));
+
+  const generatedPass = await generateRandomPassword(validUser._id);
+  await sendEmailSignin(email, generatedPass);
+
+  res.status(200).json({ success: true, msg: "Please check you box mail!" });
 };
