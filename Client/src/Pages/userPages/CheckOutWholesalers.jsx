@@ -193,7 +193,7 @@ const CheckOutWholesalers = () => {
                   )}
 
                   <p className="text-xs md:text-base">
-                    Total: {item.price * item.quantity}$
+                    Total: {(item.price * item.quantity).toFixed(2)}$
                   </p>
 
                   <button

@@ -11,7 +11,6 @@ const OrderModal = ({
   tittle,
   footer,
   selectedOrder,
-  currentUser,
   user,
 }) => {
   const [loading, setLoading] = useState(true);
@@ -26,9 +25,9 @@ const OrderModal = ({
   );
 
   useEffect(() => {
-    if (currentUser && user) setLoading(false);
-    if (!currentUser && !user) setLoading(false);
-  }, [currentUser, user]);
+    if (user) setLoading(false);
+    if (!user) setLoading(false);
+  }, [user]);
 
   const parsedDate = `${selectedOrder.createdAt?.split("T")[0]} AT ${
     selectedOrder.createdAt?.split("T")[1].split(".")[0].split(":")[0]
@@ -72,7 +71,13 @@ const OrderModal = ({
           )}
           <p className="font-semibold text-[#5956E9] flex items-center justify-between gap-5">
             User Email:
-            <span className="text-black"> {selectedOrder.userEmail}</span>
+            <span
+              className="text-black"
+              onClick={() => console.log(selectedOrder)}
+            >
+              {" "}
+              {selectedOrder.userEmail}
+            </span>
           </p>
           <p className="font-semibold text-[#5956E9] flex items-center justify-between gap-5">
             Order Date:
@@ -102,7 +107,7 @@ const OrderModal = ({
             document={
               <InvoiceFile
                 selectedOrder={selectedOrder}
-                currentUser={currentUser}
+                currentUser={selectedOrder.userInfo}
                 date={parsedDate}
               />
             }

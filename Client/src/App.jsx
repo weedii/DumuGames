@@ -21,11 +21,14 @@ import { Toaster } from "react-hot-toast";
 import WholeSale from "./Components/WholeSale";
 import SignInVerify from "./Pages/sign-in-up/SignInVerify";
 import SignInAdmin from "./Pages/adminPages/SignInAdmin";
-import PersonalInfoAdmin from "./Pages/adminPages/PersonalInfoAdmin";
 import { useSelector } from "react-redux";
 import CheckOutWholesalers from "./Pages/userPages/CheckOutWholesalers";
 import IndividualOrders from "./Pages/adminPages/IndividualOrders";
 import WholesalerOrders from "./Pages/adminPages/WholesalerOrders";
+import SuccessPayment from "./Pages/payment/SuccessPayment";
+import FailPayment from "./Pages/payment/FailPayment";
+import ProcessPayment from "./Pages/payment/ProcessPayment";
+import NavigateScrollTop from "./Components/NavigateScrollTop";
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -48,7 +51,13 @@ function App() {
         <div className="bg-[#ecf5fe] font-body overflow-x-clip">
           <Toaster position="top-right" reverseOrder={false} />
           <BrowserRouter>
+            <NavigateScrollTop />
             <Routes>
+              <Route
+                path="/payment/process-payment"
+                element={<ProcessPayment />}
+              />
+
               <Route element={<Pages />}>
                 <Route path="/" element={<Home />} />
                 <Route
@@ -59,6 +68,12 @@ function App() {
                 <Route path="/wholesale" element={<WholeSale />} />
                 <Route path="/sign-in" element={<SignIn />} />
                 <Route path="/sign-in/verify" element={<SignInVerify />} />
+
+                <Route
+                  path="/payment/success-payment"
+                  element={<SuccessPayment />}
+                />
+                <Route path="/payment/fail-payment" element={<FailPayment />} />
                 {/* <Route path="/sign-up" element={<SignUp />} /> */}
 
                 <Route
@@ -91,7 +106,7 @@ function App() {
                   />
                   <Route path="catalog" />
                   <Route path="cards" element={<Cards />} />
-                  <Route path="Profile" element={<PersonalInfoAdmin />} />
+                  {/* <Route path="Profile" element={<PersonalInfoAdmin />} /> */}
                   <Route path="Orders" element={<IndividualOrders />} />
                   <Route
                     path="Wholesaler-Orders"

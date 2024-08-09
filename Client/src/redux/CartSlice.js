@@ -105,7 +105,7 @@ const cartSlice = createSlice({
         }
       );
       state.totalQuantity = quantity;
-      state.totalAmount = total;
+      state.totalAmount = Math.round(total * 100) / 100;
     },
 
     clearCart: (state) => {

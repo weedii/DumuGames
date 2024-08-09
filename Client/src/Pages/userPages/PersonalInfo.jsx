@@ -34,7 +34,7 @@ const PersonalInfo = () => {
         formData,
         { withCredentials: true }
       );
-      dispatch(updateUser(res.data));
+      dispatch(updateUser(res.data.user));
       toast.success("Updated Successfully!");
       setLoading(false);
       // wait untill the message of the toast appears before reloading

@@ -10,7 +10,7 @@ import CardDescriptionPageAdmin from "./adminPages/CardDescriptionPageAdmin";
 import Spinner from "../Components/Spinner";
 
 // eslint-disable-next-line react/prop-types
-const Ctalog = ({ headMsg, showButton, cards }) => {
+const Ctalog = ({ headMsg, showButton, cards, getAllCards }) => {
   const [showCart, setShowCart] = useState(false);
   const [showCartAdmin, setShowCartAdmin] = useState(false);
   const [cardInfo, setCardInfo] = useState(null);
@@ -63,6 +63,7 @@ const Ctalog = ({ headMsg, showButton, cards }) => {
               showCart={showCartAdmin}
               setShowCart={setShowCartAdmin}
               cardInfo={cardInfo}
+              getAllCards={getAllCards}
             />
           )}
 

@@ -107,14 +107,25 @@ const Orders = () => {
             My Orders
           </p>
 
-          <Table
-            columns={columns}
-            dataSource={data}
-            scroll={{
-              x: 900,
-            }}
-            className="font-body"
-          />
+          <div className="only_this_table">
+            <style>
+              {`
+                @media screen and (min-width: 768px and max-width: 1200px) {
+                  .only_this_table .ant-table-wrapper {
+                    padding-right: 11rem;
+                  } 
+                }
+                `}
+            </style>
+            <Table
+              columns={columns}
+              dataSource={data}
+              scroll={{
+                x: 900,
+              }}
+              className="font-body"
+            />
+          </div>
 
           <OrderModal
             showModal={showModal}

@@ -151,7 +151,7 @@ const CardDescriptionPage = ({ showCart, setShowCart, cardInfo }) => {
             <hr className="border-black" />
 
             <div className="mt-8">
-              <div className="flex w-full md:w-[87%] px-5 md:px-0 m-auto">
+              <div className="block lg:flex w-full md:w-[87%] px-5 md:px-0 m-auto">
                 <div className="hidden md:block h-36 w-[12.5rem] mt-12 mr-12">
                   <img
                     src={cardInfo.pictureURL}
@@ -173,31 +173,38 @@ const CardDescriptionPage = ({ showCart, setShowCart, cardInfo }) => {
 
                   <div className="flex flex-col items-center gap-14 border border-slate-300 rounded-md p-5 shadow-sm">
                     <div className="flex w-full justify-between gap-5">
-                      <div className="">
+                      <div className="flex flex-col w-1/2">
                         <p className="text-xs font-semibold mb-2">
                           Select Amount
                         </p>
                         <Select
                           defaultValue={selectedAmount}
-                          style={{
-                            width: 160,
-                          }}
                           onChange={(e) => setSelectedAmount(e)}
                           options={amountsArray}
+                          className="w-full"
                         />
+
+                        {selectedAmount && (
+                          <p className="text-sm mt-3 flex gap-1">
+                            Card Price:
+                            <span>
+                              {cardInfo.prices[
+                                Number(selectedAmount.split("$")[0])
+                              ] + "$"}
+                            </span>
+                          </p>
+                        )}
                       </div>
 
-                      <div className="">
+                      <div className="w-1/2">
                         <p className="text-xs font-semibold mb-2">
                           Select Quantity
                         </p>
                         <Select
                           defaultValue={selectedQuantity}
-                          style={{
-                            width: 160,
-                          }}
                           onChange={(e) => setSelectedQuantity(e)}
                           options={quantityArray}
+                          className="w-full"
                         />
                       </div>
                     </div>
@@ -208,11 +215,9 @@ const CardDescriptionPage = ({ showCart, setShowCart, cardInfo }) => {
                       </p>
                       <Select
                         defaultValue={selectedRegion}
-                        style={{
-                          width: "100%",
-                        }}
                         onChange={(e) => setSelectedRegion(e)}
                         options={regionsArray}
+                        className="w-full"
                       />
                     </div>
 

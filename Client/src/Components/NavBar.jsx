@@ -17,7 +17,6 @@ import { IoWalletOutline } from "react-icons/io5";
 
 const NavBar = () => {
   const [menu, setMenu] = useState(false);
-  const [userMenu, setUserMenu] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
   const currentUser = useSelector((state) => state.currentUser.user);
   const cartItems = useSelector((state) => state.Cart);
@@ -26,10 +25,6 @@ const NavBar = () => {
 
   const toggleMenu = () => {
     setMenu(!menu);
-  };
-
-  const toggleUserMenu = () => {
-    setUserMenu(!userMenu);
   };
 
   const navItems = !currentUser
@@ -94,20 +89,84 @@ const NavBar = () => {
       } bg-[#ecf5fe] sticky top-0 z-10 flex justify-center`}
     >
       <div className="flex items-center justify-between h-20 px-5 max-w-7xl w-full">
-        {!currentUser || currentUser.isAdmin ? (
-          <a
-            href="/"
-            className="text-[#5956E9] text-lg md:text-2xl font-bold flex flex-row-reverse items-center hover:opacity-80 to-left"
+        <div className="flex items-center gap-2 relative">
+          <span onClick={toggleMenu} className="lg:hidden">
+            {menu ? (
+              <TfiClose size={24} className="rotate-180" />
+            ) : (
+              <CiMenuFries size={24} className="rotate-180" />
+            )}
+          </span>
+
+          <ul
+            className={`bg-[#ecf5ff] absolute top-10 left-0 py-6 px-4 text-sm font-semibold space-y-4 rounded-lg shadow-md transition-all duration-500 border
+            ${menu ? "scale-100" : "scale-0"}`}
+            onClick={toggleMenu}
+            ref={menuRef}
           >
-            <RiGameLine className="to-left" />
-            DumuGames
-          </a>
-        ) : (
-          <p className="text-[#5956E9] text-lg md:text-2xl font-bold flex flex-row-reverse items-center hover:opacity-80 to-left cursor-default">
-            <RiGameLine className="to-left" />
-            DumuGames
-          </p>
-        )}
+            {navItems.map(
+              (item, idx) =>
+                item.link != "Cart" && (
+                  <li
+                    className="hover:underline underline-offset-8"
+                    key={idx}
+                    onClick={toggleMenu}
+                  >
+                    <a
+                      href={item.path}
+                      className="flex items-center justify-center gap-1 hover:opacity-80"
+                    >
+                      <span className="text-[#5956E9] text-xl">
+                        {item.icon}
+                      </span>
+                      {item.link}
+                    </a>
+                  </li>
+                )
+            )}
+
+            {!currentUser && (
+              <li>
+                <Link to="sign-in" onClick={toggleMenu}>
+                  <button
+                    className="bg-[#5956E9] px-4 py-2 rounded-lg text-white text-center font-semibold flex mx-auto
+                    hover:scale-105 duration-100"
+                  >
+                    Sign-in
+                  </button>
+                </Link>
+              </li>
+            )}
+
+            {currentUser && (
+              <li>
+                <Link
+                  to="/My-Account/Wallet"
+                  reloadDocument
+                  className="flex items-center gap-2"
+                >
+                  <CgProfile size={20} color="#5956E9" />
+                  <p className="">Prfile</p>
+                </Link>
+              </li>
+            )}
+          </ul>
+
+          {!currentUser || currentUser.isAdmin ? (
+            <a
+              href="/"
+              className="text-[#5956E9] text-lg md:text-2xl font-bold flex flex-row-reverse items-center hover:opacity-80 to-left"
+            >
+              <RiGameLine className="to-left" />
+              DumuGames
+            </a>
+          ) : (
+            <p className="text-[#5956E9] text-lg md:text-2xl font-bold flex flex-row-reverse items-center hover:opacity-80 to-left cursor-default">
+              <RiGameLine className="to-left" />
+              DumuGames
+            </p>
+          )}
+        </div>
 
         <ul className="hidden lg:flex items-center space-x-12 font-semibold to-left">
           {currentUser && (
@@ -128,7 +187,7 @@ const NavBar = () => {
               >
                 <div>
                   <span
-                    className={`bg-red-700 rounded-full absolute -top-3 -right-4 text-white text-[9px] font-sans font-bold py-1 px-2
+                    className={`bg-red-700 rounded-full absolute -top-3 -right-3 text-white text-[9px] font-bold py-1 px-[6px]
                     ${item.link === "Cart" ? "block" : "hidden"}`} // ${cartItems.cartItems.length > 0 && item.link === "Cart"? "block": "hidden"}
                   >
                     {cartItems.totalQuantity}
@@ -165,7 +224,7 @@ const NavBar = () => {
           )}
         </ul>
 
-        <div className="lg:hidden h-fit cursor-pointer to-left" ref={menuRef}>
+        <div className="lg:hidden h-fit cursor-pointer to-left">
           <div className="flex items-center space-x-4">
             {currentUser && (
               <div className="bg-white px-5 p-1 rounded-md border flex items-center gap-3">
@@ -174,108 +233,21 @@ const NavBar = () => {
               </div>
             )}
 
-            {currentUser ? (
-              <span onClick={toggleUserMenu}>
-                {userMenu ? (
-                  <TfiClose size={24} color="#5956E9" />
-                ) : (
-                  <CiMenuFries size={24} color="#5956E9" />
-                )}
-              </span>
-            ) : (
-              <span onClick={toggleMenu}>
-                {menu ? (
-                  <TfiClose size={24} color="#5956E9" />
-                ) : (
-                  <CiMenuFries size={24} color="#5956E9" />
-                )}
-              </span>
-            )}
-
-            <ul
-              className={`bg-[#ecf5ff] absolute top-9 right-2 p-4 text-sm font-semibold space-y-4 rounded-lg shadow-lg transition-all duration-500 border
-            ${userMenu ? "scale-100" : "scale-0"}`}
-              onClick={toggleUserMenu}
+            <Link
+              to="/Cart"
+              reloadDocument
+              className="text-[#5956E9] flex items-center gap-2"
             >
-              {currentUser && (
-                <li>
-                  <Link
-                    to="/Catalog"
-                    reloadDocument
-                    className="flex items-center gap-2"
-                  >
-                    <TbCards size={16} color="#5956E9" />
-                    <p className="text-xs">Catalog</p>
-                  </Link>
-                </li>
-              )}
-
-              <li>
-                <Link
-                  to="/Cart"
-                  reloadDocument
-                  className="text-[#5956E9] flex items-center gap-2"
+              <div className="relative">
+                <span
+                  className={`bg-red-700 rounded-full absolute -top-3 -right-2 text-white text-xs font-bold py-0 px-[5px]`}
                 >
-                  <div className="relative">
-                    <span
-                      className={`bg-red-700 rounded-full absolute -top-3 -right-2 text-white text-[7px] font-sans font-bold py-0 px-[5px]`}
-                    >
-                      {cartItems.totalQuantity}
-                    </span>
-                    <FiShoppingCart size={16} />
-                  </div>
-                  <p className="text-xs">Cart</p>
-                </Link>
-              </li>
-
-              {currentUser && (
-                <li>
-                  <Link
-                    to="/My-Account/Wallet"
-                    reloadDocument
-                    className="flex items-center gap-2"
-                  >
-                    <CgProfile size={16} color="#5956E9" />
-                    <p className="text-xs">Prfile</p>
-                  </Link>
-                </li>
-              )}
-            </ul>
+                  {cartItems.totalQuantity}
+                </span>
+                <FiShoppingCart size={23} />
+              </div>
+            </Link>
           </div>
-
-          <ul
-            className={`bg-[#ecf5ff] absolute top-7 right-4 p-4 text-sm font-semibold space-y-4 rounded-lg shadow-md transition-all duration-500
-            ${menu ? "scale-100" : "scale-0"}`}
-            onClick={toggleMenu}
-          >
-            {navItems.map(
-              (item, idx) =>
-                item.link != "Cart" && (
-                  <li className="hover:underline underline-offset-8" key={idx}>
-                    <a
-                      href={item.path}
-                      className="flex items-center justify-center gap-1 hover:opacity-80"
-                    >
-                      <span className="text-[#5956E9]">{item.icon}</span>
-                      {item.link}
-                    </a>
-                  </li>
-                )
-            )}
-
-            {!currentUser && (
-              <li>
-                <Link to="sign-in">
-                  <button
-                    className="bg-[#5956E9] px-4 py-2 rounded-lg text-white font-semibold flex mx-auto
-                    w-full hover:scale-105 duration-100"
-                  >
-                    Sign-in
-                  </button>
-                </Link>
-              </li>
-            )}
-          </ul>
         </div>
       </div>
     </div>

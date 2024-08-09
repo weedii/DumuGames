@@ -3,17 +3,26 @@ import { Modal, Spin } from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import axios from "axios";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import API_URL from "../../utils/apiConfig";
+import toast from "react-hot-toast";
+import { signOut } from "../../redux/userSlice";
 
-const UserDescriptionModal = ({ showModal, setShowModal, selectedUser }) => {
+const UserDescriptionModal = ({
+  showModal,
+  setShowModal,
+  selectedUser,
+  fetchUsers,
+}) => {
   const [showModalDelete, setShowModalDelete] = useState(false);
   const [loading, setLoading] = useState(false);
   const currentUser = useSelector((state) => state.currentUser.user);
+  const dispatch = useDispatch();
 
   const handleOnClose = () => {
     setShowModal(false);
   };
+
   const handleOnCloseDelete = () => {
     setShowModalDelete(false);
   };
@@ -32,8 +41,56 @@ const UserDescriptionModal = ({ showModal, setShowModal, selectedUser }) => {
         setLoading(false);
         window.location.reload();
       })
-      .catch((err) => {
-        console.log(err);
+      .catch(() => {
+        toast.error("Error while deleting User");
+        setLoading(false);
+      });
+  };
+
+  const handleSignOut = () => {
+    axios
+      .get(`${API_URL}/api/auth/signout`, { withCredentials: true })
+      .then(() => {
+        dispatch(signOut());
+        window.location.href = "/";
+      })
+      .catch((err) => console.log(err));
+  };
+
+  const handleDeleteAdmin = async () => {
+    if (selectedUser.email === "admin@g.com") {
+      toast.error("You can't delete this admin!");
+      handleOnClose();
+      return;
+    }
+
+    setLoading(true);
+    await axios
+      .post(
+        `${API_URL}/api/admin/delete-admin`,
+        { email: selectedUser.email },
+        {
+          withCredentials: true,
+        }
+      )
+      .then((res) => {
+        if (res.data.success) {
+          setLoading(false);
+          toast.success(res.data.msg);
+          handleOnClose();
+          fetchUsers();
+          if (selectedUser.email === currentUser.email) {
+            handleSignOut();
+          }
+        } else if (!res.data.success) {
+          setLoading(false);
+          handleOnClose();
+          toast.error(res.data.msg);
+          return;
+        }
+      })
+      .catch(() => {
+        toast.error("Error while deleting Admin");
         setLoading(false);
       });
   };
@@ -53,10 +110,10 @@ const UserDescriptionModal = ({ showModal, setShowModal, selectedUser }) => {
         .then(() => {
           setLoading(false);
           setShowModal(false);
-          window.location.reload();
+          fetchUsers();
         })
-        .catch((err) => {
-          console.log(err);
+        .catch(() => {
+          toast.error("Error while updating status");
           setLoading(false);
         });
     } else {
@@ -73,22 +130,33 @@ const UserDescriptionModal = ({ showModal, setShowModal, selectedUser }) => {
         .then(() => {
           setLoading(false);
           setShowModal(false);
-          window.location.reload();
+          fetchUsers();
         })
-        .catch((err) => {
-          console.log(err);
+        .catch(() => {
+          toast.error("Error while updating status");
           setLoading(false);
         });
     }
   };
 
   const footer = selectedUser.isAdmin ? (
-    <button
-      onClick={handleOnClose}
-      className="bg-[#5956E9] text-white px-3 py-1 rounded-md shadow-md hover:bg-opacity-85 mt-5"
-    >
-      Ok
-    </button>
+    <div className="w-full flex items-center justify-end gap-3">
+      <button
+        onClick={handleOnClose}
+        disabled={loading}
+        className="bg-gray-500 text-white px-3 py-2 rounded-md shadow-md hover:bg-gray-400 mt-5 disabled:cursor-not-allowed disabled:opacity-75"
+      >
+        Cancel
+      </button>
+
+      <button
+        onClick={handleDeleteAdmin}
+        disabled={loading}
+        className="bg-red-600 text-white px-3 py-2 rounded-md shadow-md hover:bg-red-500 mt-5 disabled:cursor-not-allowed disabled:opacity-75"
+      >
+        {loading ? "Loading..." : "Delete"}
+      </button>
+    </div>
   ) : (
     <div className="flex items-center justify-between border-t border-t-slate-600 pt-3">
       <div className="flex gap-2 md:gap-4">
@@ -152,7 +220,7 @@ const UserDescriptionModal = ({ showModal, setShowModal, selectedUser }) => {
             <input
               disabled
               type="text"
-              className="border px-2 py-1 rounded-md outline outline-1 outline-slate-300 text-sm font-semibold cursor-not-allowed"
+              className="border px-2 py-1 rounded-md outline outline-1 outline-slate-300 text-sm font-semibold cursor-text"
               defaultValue={"Admin"}
             />
           </div>
@@ -162,7 +230,7 @@ const UserDescriptionModal = ({ showModal, setShowModal, selectedUser }) => {
             <input
               disabled
               type="text"
-              className="border px-2 py-1 rounded-md outline outline-1 outline-slate-300 text-sm font-semibold cursor-not-allowed"
+              className="border px-2 py-1 rounded-md outline outline-1 outline-slate-300 text-sm font-semibold cursor-text"
               defaultValue={selectedUser.name}
             />
           </div>
@@ -172,7 +240,7 @@ const UserDescriptionModal = ({ showModal, setShowModal, selectedUser }) => {
             <input
               disabled
               type="text"
-              className="border px-2 py-1 rounded-md outline outline-1 outline-slate-300 text-sm font-semibold cursor-not-allowed"
+              className="border px-2 py-1 rounded-md outline outline-1 outline-slate-300 text-sm font-semibold cursor-text"
               defaultValue={selectedUser.email}
             />
           </div>
@@ -184,7 +252,7 @@ const UserDescriptionModal = ({ showModal, setShowModal, selectedUser }) => {
             <input
               disabled
               type="text"
-              className="border px-2 py-1 rounded-md outline outline-1 outline-slate-300 text-sm font-semibold cursor-not-allowed w-2/3"
+              className="border px-2 py-1 rounded-md outline outline-1 outline-slate-300 text-sm font-semibold cursor-text w-2/3"
               defaultValue={"User"}
             />
           </div>
@@ -194,7 +262,7 @@ const UserDescriptionModal = ({ showModal, setShowModal, selectedUser }) => {
             <input
               disabled
               type="text"
-              className="border px-2 py-1 rounded-md outline outline-1 outline-slate-300 text-sm font-semibold cursor-not-allowed w-2/3"
+              className="border px-2 py-1 rounded-md outline outline-1 outline-slate-300 text-sm font-semibold cursor-text w-2/3"
               defaultValue={selectedUser._id}
             />
           </div>
@@ -204,7 +272,7 @@ const UserDescriptionModal = ({ showModal, setShowModal, selectedUser }) => {
             <input
               disabled
               type="text"
-              className="border px-2 py-1 rounded-md outline outline-1 outline-slate-300 text-sm font-semibold cursor-not-allowed w-2/3"
+              className="border px-2 py-1 rounded-md outline outline-1 outline-slate-300 text-sm font-semibold cursor-text w-2/3"
               defaultValue={selectedUser.first_name}
             />
           </div>
@@ -214,7 +282,7 @@ const UserDescriptionModal = ({ showModal, setShowModal, selectedUser }) => {
             <input
               disabled
               type="text"
-              className="border px-2 py-1 rounded-md outline outline-1 outline-slate-300 text-sm font-semibold cursor-not-allowed w-2/3"
+              className="border px-2 py-1 rounded-md outline outline-1 outline-slate-300 text-sm font-semibold cursor-text w-2/3"
               defaultValue={selectedUser.last_name}
             />
           </div>
@@ -224,7 +292,7 @@ const UserDescriptionModal = ({ showModal, setShowModal, selectedUser }) => {
             <input
               disabled
               type="text"
-              className="border px-2 py-1 rounded-md outline outline-1 outline-slate-300 text-sm font-semibold cursor-not-allowed w-2/3"
+              className="border px-2 py-1 rounded-md outline outline-1 outline-slate-300 text-sm font-semibold cursor-text w-2/3"
               defaultValue={selectedUser.email}
             />
           </div>
@@ -234,7 +302,7 @@ const UserDescriptionModal = ({ showModal, setShowModal, selectedUser }) => {
             <input
               disabled
               type="text"
-              className="border px-2 py-1 rounded-md outline outline-1 outline-slate-300 text-sm font-semibold cursor-not-allowed w-2/3"
+              className="border px-2 py-1 rounded-md outline outline-1 outline-slate-300 text-sm font-semibold cursor-text w-2/3"
               defaultValue={selectedUser.phone}
             />
           </div>
@@ -244,7 +312,7 @@ const UserDescriptionModal = ({ showModal, setShowModal, selectedUser }) => {
             <input
               disabled
               type="text"
-              className="border px-2 py-1 rounded-md outline outline-1 outline-slate-300 text-sm font-semibold cursor-not-allowed w-2/3"
+              className="border px-2 py-1 rounded-md outline outline-1 outline-slate-300 text-sm font-semibold cursor-text w-2/3"
               defaultValue={selectedUser.country}
             />
           </div>
@@ -254,7 +322,7 @@ const UserDescriptionModal = ({ showModal, setShowModal, selectedUser }) => {
             <input
               disabled
               type="text"
-              className="border px-2 py-1 rounded-md outline outline-1 outline-slate-300 text-sm font-semibold cursor-not-allowed w-2/3"
+              className="border px-2 py-1 rounded-md outline outline-1 outline-slate-300 text-sm font-semibold cursor-text w-2/3"
               defaultValue={selectedUser.balance + "$"}
             />
           </div>
@@ -264,7 +332,7 @@ const UserDescriptionModal = ({ showModal, setShowModal, selectedUser }) => {
             <input
               disabled
               type="text"
-              className="border px-2 py-1 rounded-md outline outline-1 outline-slate-300 text-sm font-semibold cursor-not-allowed w-2/3"
+              className="border px-2 py-1 rounded-md outline outline-1 outline-slate-300 text-sm font-semibold cursor-text w-2/3"
               defaultValue={selectedUser.verification_status}
             />
           </div>
@@ -276,7 +344,7 @@ const UserDescriptionModal = ({ showModal, setShowModal, selectedUser }) => {
             <input
               disabled
               type="text"
-              className="border px-2 py-1 rounded-md outline outline-1 outline-slate-300 text-sm font-semibold cursor-not-allowed w-2/3"
+              className="border px-2 py-1 rounded-md outline outline-1 outline-slate-300 text-sm font-semibold cursor-text w-2/3"
               defaultValue={selectedUser.identification_type}
             />
           </div>

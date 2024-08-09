@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Table, Spin, Input } from "antd";
 import axios from "axios";
 import { LoadingOutlined } from "@ant-design/icons";
-import { useSelector } from "react-redux";
+// import { useSelector } from "react-redux";
 import OrderModal from "../../Components/OrderModal";
 import API_URL from "../../utils/apiConfig";
 
@@ -10,10 +10,9 @@ const WholesalerOrders = () => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState({});
-  const [selectedOrderUser, setSelectedOrderUser] = useState({});
   const [showModal, setShowModal] = useState(false);
   const [searchText, setSearchText] = useState("");
-  const currentUser = useSelector((state) => state.currentUser.user);
+  // const currentUser = useSelector((state) => state.currentUser.user);
 
   const columns = [
     {
@@ -58,22 +57,6 @@ const WholesalerOrders = () => {
     </button>
   );
 
-  const fetchUserInfo = async (_id) => {
-    try {
-      const res = await axios.post(
-        `${API_URL}/api/admin/get-user-info-by-id`,
-        { _id },
-        { withCredentials: true }
-      );
-      if (res.data.success) {
-        setSelectedOrderUser(res.data.data);
-        setShowModal(true);
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
   useEffect(() => {
     axios
       .get(`${API_URL}/api/admin/get-orders`, { withCredentials: true })
@@ -91,8 +74,10 @@ const WholesalerOrders = () => {
               <button
                 className="text-blue-600 hover:underline"
                 onClick={() => {
+                  console.log(item);
+
                   setSelectedOrder(item);
-                  fetchUserInfo(item.userID);
+                  setShowModal(true);
                 }}
               >
                 Show Details
@@ -150,7 +135,6 @@ const WholesalerOrders = () => {
               tittle={"Order Informations"}
               footer={footer}
               selectedOrder={selectedOrder}
-              currentUser={selectedOrderUser}
               user={true}
             />
           </div>

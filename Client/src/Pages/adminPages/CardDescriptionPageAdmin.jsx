@@ -4,14 +4,25 @@ import Spinner from "../../Components/Spinner";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { FiArrowLeft } from "react-icons/fi";
-import { Modal } from "antd";
+import { Input, Modal } from "antd";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import API_URL from "../../utils/apiConfig";
+import { FaRegEdit } from "react-icons/fa";
+import { IoCloseSharp } from "react-icons/io5";
+import { Spin } from "antd";
+import { LoadingOutlined } from "@ant-design/icons";
 
-const CardDescriptionPageAdmin = ({ showCart, setShowCart, cardInfo }) => {
+const CardDescriptionPageAdmin = ({
+  showCart,
+  setShowCart,
+  cardInfo,
+  getAllCards,
+}) => {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showEditPrice, setShowEditPrice] = useState(false);
+  const [newPrice, setNewPrice] = useState(null);
 
   const handleOnClose = () => {
     setShowModal(false);
@@ -38,6 +49,37 @@ const CardDescriptionPageAdmin = ({ showCart, setShowCart, cardInfo }) => {
         setLoading(false);
         console.log(err);
       });
+  };
+
+  const handleUpdatePrice = async (oldPrice, amount) => {
+    if (newPrice && newPrice != oldPrice) {
+      if (newPrice <= 0) {
+        toast.error("Price should be greeter than 0");
+        return;
+      } else {
+        setLoading(true);
+        await axios
+          .post(
+            `${API_URL}/api/admin/update-card-price`,
+            { cardId: cardInfo._id, amount, price: newPrice },
+            { withCredentials: true }
+          )
+          .then((res) => {
+            if (res.data.success) {
+              setLoading(false);
+              setShowEditPrice(false);
+              getAllCards();
+              toast.success(res.data.msg);
+            }
+          })
+          .catch(() => {
+            toast.error("Error while changing price!");
+            setLoading(false);
+          });
+      }
+    } else {
+      setShowEditPrice(false);
+    }
   };
 
   const footer = (
@@ -125,12 +167,74 @@ const CardDescriptionPageAdmin = ({ showCart, setShowCart, cardInfo }) => {
                               {qt}
                             </p>
                           ))}
-                          <p className="flex w-full gap-1">
-                            <span className="text-red-600 font-semibold">
-                              Price:
+
+                          <div className="w-full flex items-center justify-between">
+                            <span className="flex w-full gap-1 items-center">
+                              <span className="text-red-600 font-semibold">
+                                Price:
+                              </span>
+                              {showEditPrice ? (
+                                <div className="flex items-center gap-3">
+                                  <Input
+                                    type="number"
+                                    autoFocus
+                                    placeholder={cardInfo.prices[key]}
+                                    min={1}
+                                    className="w-1/3"
+                                    onChange={(e) =>
+                                      setNewPrice(Number(e.target.value))
+                                    }
+                                  />
+
+                                  <button
+                                    className="bg-green-600 px-3 py-1 rounded-md text-white hover:bg-green-500 disabled:opacity-75 disabled:cursor-not-allowed"
+                                    disabled={loading}
+                                    onClick={() =>
+                                      handleUpdatePrice(
+                                        cardInfo.prices[key],
+                                        key
+                                      )
+                                    }
+                                  >
+                                    {loading ? (
+                                      <Spin
+                                        indicator={
+                                          <LoadingOutlined
+                                            style={{
+                                              fontSize: 20,
+                                              color: "white",
+                                            }}
+                                            spin
+                                          />
+                                        }
+                                      />
+                                    ) : (
+                                      "save"
+                                    )}
+                                  </button>
+                                </div>
+                              ) : (
+                                cardInfo.prices[key] + "$"
+                                // typeof cardInfo.prices[key]
+                              )}
                             </span>
-                            {cardInfo.prices[key]}$
-                          </p>
+
+                            {showEditPrice ? (
+                              <span onClick={() => setShowEditPrice(false)}>
+                                <IoCloseSharp
+                                  size={20}
+                                  className="cursor-pointer hover:opacity-75 text-red-700"
+                                />
+                              </span>
+                            ) : (
+                              <span onClick={() => setShowEditPrice(true)}>
+                                <FaRegEdit
+                                  size={16}
+                                  className="cursor-pointer hover:opacity-75"
+                                />
+                              </span>
+                            )}
+                          </div>
                           <div className="bg-red-700 w-full my-2 outline-dashed outline-1 outline-slate-400" />
                         </div>
                       )

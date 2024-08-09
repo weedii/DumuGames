@@ -2,10 +2,9 @@ import { FiShoppingCart } from "react-icons/fi";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import {
-  clearCart,
-  decreaseItemQuantity,
+  // decreaseItemQuantity,
   getTotals,
-  increaseItemQuantity,
+  // increaseItemQuantity,
   removeFromCart,
 } from "../redux/CartSlice";
 import { IoMdTrash } from "react-icons/io";
@@ -13,24 +12,20 @@ import { useEffect, useState } from "react";
 import { Modal, Input } from "antd";
 import axios from "axios";
 import toast from "react-hot-toast";
-import OrderModal from "./OrderModal";
 import API_URL from "../utils/apiConfig";
+import { v4 as uuidv4 } from "uuid";
+import { useNavigate } from "react-router-dom";
 
 const CheckOut = () => {
   const cartItems = useSelector((state) => state.Cart);
   const dispatch = useDispatch();
   const [showModal, setShowModal] = useState(false);
-  const [showOrderModal, setShowOrderModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({});
-  const [selectedOrder, setSelectedOrder] = useState({});
+  const navigate = useNavigate();
 
   const handleOnClose = () => {
     setShowModal(false);
-  };
-
-  const handleOnCloseOrderModal = () => {
-    setShowOrderModal(false);
   };
 
   const handleRemoveFromCart = (item) => {
@@ -38,15 +33,15 @@ const CheckOut = () => {
     return;
   };
 
-  const handleDecreaseItemCart = (item) => {
-    dispatch(decreaseItemQuantity(item));
-    return;
-  };
+  // const handleDecreaseItemCart = (item) => {
+  //   dispatch(decreaseItemQuantity(item));
+  //   return;
+  // };
 
-  const handleIncreaseItemCart = (item) => {
-    dispatch(increaseItemQuantity(item));
-    return;
-  };
+  // const handleIncreaseItemCart = (item) => {
+  //   dispatch(increaseItemQuantity(item));
+  //   return;
+  // };
 
   const handleOnChange = (e) => {
     setFormData({
@@ -60,7 +55,23 @@ const CheckOut = () => {
     return emailPattern.test(email);
   };
 
-  const handleSubmit = async () => {
+  const handleCheckStockCards = async (cardsArray) => {
+    try {
+      const res = await axios.post(`${API_URL}/api/user/check-stock`, {
+        cardsArray,
+      });
+
+      if (res.data.success) {
+        return { isInStock: true, cradTypes: [] };
+      } else if (!res.data.success) {
+        return { isInStock: false, cradTypes: res.data.cradTypes };
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleCheckOut = async () => {
     if (!formData.name || !formData.email) {
       toast.error("Missing Fields!");
       return;
@@ -71,60 +82,64 @@ const CheckOut = () => {
       return;
     }
 
-    const cardsArray = [];
-    setLoading(true);
-    for (let cartItem of cartItems.cartItems) {
-      cardsArray.push({
-        type: cartItem.type,
-        region: cartItem.region,
-        amount: cartItem.amount.substring(0, cartItem.amount.length - 1),
-        quantity: cartItem.quantity,
-        price: cartItem.price,
-        totalPrice: cartItems.totalAmount,
-      });
-    }
-    axios
-      .post(
-        `${API_URL}/api/user/get-cards-individuals`,
-        {
-          paid: true,
-          formData,
-          cardsArray,
-          totalAmount: cartItems.totalAmount,
-        },
-        { withCredentials: true }
-      )
-      .then((res) => {
-        if (res.data.success) {
-          setShowModal(false);
+    try {
+      setLoading(true);
+
+      // generate order ID
+      const orderId = uuidv4();
+
+      const cardsArray = [];
+      for (let cartItem of cartItems.cartItems) {
+        cardsArray.push({
+          type: cartItem.type,
+          region: cartItem.region,
+          amount: cartItem.amount.substring(0, cartItem.amount.length - 1),
+          quantity: cartItem.quantity,
+          price: cartItem.price,
+          totalPrice: cartItems.totalAmount,
+        });
+      }
+
+      // check if there is cards in stock
+      const { isInStock, cradTypes } = await handleCheckStockCards(cardsArray);
+
+      if (!isInStock) {
+        toast.error("Insufficient Stock!");
+        navigate("/payment/fail-payment", {
+          state: { msg: "Insufficient Stock", data: cradTypes },
+        });
+        return;
+      } else {
+        const response = await axios.post(`${API_URL}/api/checkout/checkout`, {
+          orderId,
+          amount: cartItems.totalAmount,
+          items: cardsArray,
+          payerEmail: formData.email,
+          payerName: formData.name,
+        });
+
+        if (response.data && response.data.data) {
+          const invoiceId = response.data.data;
+
+          // save invoiceId in localhost to use it in success payment page to create an order and send cards to user
+          localStorage.setItem("invoiceId", invoiceId);
+
           setLoading(false);
-          setSelectedOrder(res.data.order);
-          dispatch(clearCart());
-          toast.success("Check your email!");
-          setShowOrderModal(true);
+
+          // Redirect user to PayDo checkout page
+          window.location.href = `https://checkout.paydo.com/en/payment/invoice-preprocessing/${invoiceId}`;
         }
-      })
-      .catch((err) => {
-        console.log(err);
-        setLoading(false);
-      });
+      }
+    } catch (error) {
+      setLoading(false);
+      console.error("Payment error:", error);
+    }
   };
 
   useEffect(() => {
     dispatch(getTotals());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cartItems]);
-
-  // useEffect(() => {
-  //   if (cartItems.cartItem.length > 0) {
-  //     cartItems.cartItems.map((item) => {
-  //       setSelectedOrder({
-  //         ...selectedOrder,
-  //         totalPrice: item.price * item.quantity,
-  //       });
-  //     });
-  //   }
-  // });
 
   const footer = (
     <div className="space-x-2">
@@ -136,7 +151,7 @@ const CheckOut = () => {
         Cancel
       </button>
       <button
-        onClick={handleSubmit}
+        onClick={handleCheckOut}
         disabled={loading}
         className="bg-green-700 px-3 py-2 rounded-md text-white hover:bg-green-800 disabled:bg-opacity-75 disabled:cursor-not-allowed"
       >
@@ -173,7 +188,7 @@ const CheckOut = () => {
                   />
                   <div className="flex flex-col justify-between">
                     <p className="text-start font-semibold text-xs md:text-base">
-                      {item.type} Card
+                      {item.type}
                     </p>
                     <div>
                       <p className="text-xs md:text-sm font-bold text-red-600">
@@ -191,27 +206,29 @@ const CheckOut = () => {
 
                 <div className="h-full flex flex-col items-end gap-5 ml-auto">
                   <div className="flex items-center gap-3">
-                    <button
+                    {/* <button
                       className="font-bold text-xl px-2 py-0 rounded-md bg-slate-200 hover:bg-red-300"
                       onClick={() => {
                         handleDecreaseItemCart(item);
                       }}
                     >
                       -
-                    </button>
-                    <p className="text-xs md:text-base">{item.quantity}</p>
-                    <button
+                    </button> */}
+                    <p className="text-xs md:text-base">
+                      Quantity: {item.quantity}
+                    </p>
+                    {/* <button
                       className="font-bold text-xl px-2 py-0 rounded-md bg-slate-200 hover:bg-green-300"
                       onClick={() => {
                         handleIncreaseItemCart(item);
                       }}
                     >
                       +
-                    </button>
+                    </button> */}
                   </div>
 
                   <p className="text-xs md:text-base">
-                    Total: {item.price * item.quantity}$
+                    Total: {(item.price * item.quantity).toFixed(2)}$
                   </p>
 
                   <button
@@ -248,11 +265,11 @@ const CheckOut = () => {
         open={showModal}
         onCancel={handleOnClose}
         destroyOnClose
-        // footer={footer}
-        footer={null}
+        footer={footer}
+        // footer={null}
       >
         <div className="min-h-[15vh]">
-          {/* <form className="flex flex-col gap-2 mb-5">
+          <form className="flex flex-col gap-2 mb-5">
             <p>
               Name: <span className="text-red-700">*</span>
             </p>
@@ -284,27 +301,17 @@ const CheckOut = () => {
                 <p>| Rg: {item.region}</p>
               </div>
 
-              <p>{item.price * item.quantity}$</p>
+              <p>{(item.price * item.quantity).toFixed(2)}$</p>
             </div>
           ))}
           <p className="mt-5 text-end text-[#5956E9] font-semibold">
             Total: {cartItems.totalAmount}$
-          </p> */}
-          <p className="text-3xl text-center font-body font-medium text-red-700 mt-14">
-            Comming Soon
           </p>
+          {/* <p className="text-3xl text-center font-body font-medium text-red-700 mt-14">
+            Comming Soon
+          </p> */}
         </div>
       </Modal>
-
-      <OrderModal
-        showModal={showOrderModal}
-        handleOnClose={handleOnCloseOrderModal}
-        tittle={"Order Informations"}
-        footer={null}
-        selectedOrder={selectedOrder}
-        currentUser={null}
-        user={false}
-      />
     </div>
   );
 };

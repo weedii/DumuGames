@@ -17,11 +17,10 @@ const CheckOutModal = ({
       open={showModal}
       onCancel={handleOnClose}
       destroyOnClose
-      // footer={footer}
-      footer={null}
+      footer={footer}
     >
       <div className="min-h-[15vh]">
-        {/* {cartItems.cartItems.map((item, idx) => (
+        {cartItems.cartItems.map((item, idx) => (
           <div key={idx} className="flex items-center justify-between text-sm">
             <div className="flex gap-2">
               <p>{item.type} Cards</p>
@@ -30,7 +29,7 @@ const CheckOutModal = ({
               <p>| Rg: {item.region}</p>
             </div>
 
-            <p>{item.price * item.quantity}$</p>
+            <p>{(item.price * item.quantity).tofi}$</p>
           </div>
         ))}
         <p className="mt-5 text-end text-[#5956E9] font-semibold">
@@ -61,10 +60,7 @@ const CheckOutModal = ({
               The amount that will be taken is (-{cartItems.totalAmount} $)
             </p>
           </div>
-        )} */}
-        <p className="text-3xl text-center font-body font-medium text-red-700 mt-14">
-          Comming Soon
-        </p>
+        )}
       </div>
     </Modal>
   );

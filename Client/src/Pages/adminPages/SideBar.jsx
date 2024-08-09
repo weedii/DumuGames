@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import { FiUser } from "react-icons/fi";
 import { TbLayoutGridAdd } from "react-icons/tb";
 import { NavLink } from "react-router-dom";
-import { IoLogOutOutline, IoPersonCircleOutline } from "react-icons/io5";
+import { IoLogOutOutline } from "react-icons/io5";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { signOut } from "../../redux/userSlice";
@@ -43,11 +43,11 @@ const SideBar = ({ menu }) => {
       tittle: "Individual Orders",
       icon: <LuClipboardList size={25} className="min-w-max" />,
     },
-    {
-      path: "Profile",
-      tittle: "Personal Info",
-      icon: <IoPersonCircleOutline size={25} className="min-w-max" />,
-    },
+    // {
+    //   path: "Profile",
+    //   tittle: "Personal Info",
+    //   icon: <IoPersonCircleOutline size={25} className="min-w-max" />,
+    // },
   ];
 
   const handleSignOut = () => {

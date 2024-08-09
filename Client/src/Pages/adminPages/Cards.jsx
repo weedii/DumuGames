@@ -71,6 +71,7 @@ const Cards = () => {
             headMsg={
               cardsArray?.length > 0 ? "Availble Cards" : "No Availble Cards"
             }
+            getAllCards={getAllCards}
           />
         </div>
       )}

@@ -181,6 +181,68 @@ const InvoiceFile = ({ selectedOrder, currentUser, date }) => {
                 <Text
                   style={{ marginTop: "10px" }}
                 >{`Payments: (${selectedOrder.totalPrice}$)`}</Text>
+
+                {/* codes will be there */}
+                <View
+                  style={{
+                    width: "100%",
+                    backgroundColor: "black",
+                    borderColor: "black",
+                    padding: "1px",
+                    marginVertical: "10px",
+                    marginTop: "30px",
+                  }}
+                ></View>
+
+                <View
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    width: "100%",
+                  }}
+                >
+                  <Text>Type</Text>
+                  <Text>Amount</Text>
+                  <Text>Region</Text>
+                  <Text>Codes</Text>
+                </View>
+
+                <View
+                  style={{
+                    width: "100%",
+                    backgroundColor: "black",
+                    borderColor: "black",
+                    padding: "1px",
+                    marginVertical: "10px",
+                  }}
+                ></View>
+
+                {selectedOrder.cards.map((item, idx) => (
+                  <View
+                    key={idx}
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginVertical: "10px",
+                      width: "100%",
+                    }}
+                  >
+                    <Text>{item.cardType}</Text>
+                    <Text>{item.amount}$</Text>
+                    <Text>{item.region}</Text>
+
+                    <View style={{ display: "flex", flexDirection: "column" }}>
+                      {item.codes.map((code, key) => (
+                        <Text key={key}>{code}</Text>
+                      ))}
+                    </View>
+                  </View>
+                ))}
+
                 <View
                   style={{
                     width: "50%",

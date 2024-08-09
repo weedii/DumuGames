@@ -8,9 +8,11 @@ import axios from "axios";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import API_URL from "../../utils/apiConfig";
+import LoadingButton from "../../Components/LoadingButton";
 
 const SignInVerify = () => {
   const [loading, setLoading] = useState(false);
+  const [loadingResendPass, setLoadingResendPass] = useState(false);
   const [password, setPassword] = useState("");
   const dispatch = useDispatch();
   const location = useLocation();
@@ -28,7 +30,7 @@ const SignInVerify = () => {
       .post(
         `${API_URL}/api/auth/signin`,
         {
-          userID: location.state.userID,
+          email: location.state.email,
           password: password,
         },
         { withCredentials: true }
@@ -47,8 +49,26 @@ const SignInVerify = () => {
       });
   };
 
+  const handleSendPassAgain = async () => {
+    try {
+      setLoadingResendPass(true);
+      const res = await axios.post(`${API_URL}/api/auth/resend-pass`, {
+        email: location.state.email,
+      });
+      if (res.data.success) {
+        toast.success(res.data.msg);
+        setLoadingResendPass(false);
+        return;
+      }
+    } catch (error) {
+      toast.error("Error while re-sending password!");
+      setLoadingResendPass(false);
+      return;
+    }
+  };
+
   useEffect(() => {
-    if (!location.state || (location.state && !location.state.userID)) {
+    if (!location.state || (location.state && !location.state.email)) {
       navigate("/", { replace: true });
       return;
     }
@@ -90,9 +110,23 @@ const SignInVerify = () => {
             ${loading ? "cursor-not-allowed" : "cursor-pointer"}`}
           disabled={loading}
         >
-          Sign in
+          {loading ? <LoadingButton /> : "Verify"}
         </button>
       </form>
+
+      <div className="sm:flex gap-1 items-center justify-start w-full">
+        <p className="text-sm text-gray-700">{"Didn't get the password?"}</p>
+        <p
+          className="text-sm font-semibold text-blue-500 cursor-pointer hover:underline"
+          onClick={loadingResendPass ? null : handleSendPassAgain}
+        >
+          {loadingResendPass ? (
+            <LoadingButton color={"#5956E9"} />
+          ) : (
+            "Send Again"
+          )}
+        </p>
+      </div>
     </div>
   );
 };

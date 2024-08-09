@@ -8,6 +8,7 @@ import { useSelector } from "react-redux";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import API_URL from "../../utils/apiConfig";
+import LoadingButton from "../../Components/LoadingButton";
 
 const SignIn = () => {
   // const [showPass, setShowPass] = useState(false);
@@ -51,7 +52,7 @@ const SignIn = () => {
           setLoading(false);
           navigate("/sign-in/verify", {
             replace: true,
-            state: { userID: res.data.userID },
+            state: { email: res.data.email },
           });
         }
       })
@@ -137,7 +138,7 @@ const SignIn = () => {
             ${loading ? "cursor-not-allowed" : "cursor-pointer"}`}
             disabled={loading}
           >
-            Sign in
+            {loading ? <LoadingButton /> : "Sign in"}
           </button>
         </form>
 

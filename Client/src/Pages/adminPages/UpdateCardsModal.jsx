@@ -170,6 +170,7 @@ const UpdateCardsModal = ({ showModal, setShowModal, cardTypesArray }) => {
                 <p className="text-sm font-medium">Price in $:</p>
                 <input
                   type="number"
+                  step="0.01"
                   min={1}
                   value={price[amountt] || ""}
                   onChange={(e) =>
